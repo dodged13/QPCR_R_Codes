@@ -1,6 +1,6 @@
-  qpcrplot = function(x,df,y,z,hk) {
+qpcrplot = function(x,df,y,z,hk) {
     library(ggplot2)
-    dat = read.csv(choose.files(), header = T, sep = "\t")
+    dat = read.csv(choose.files(), header = T)
     colnames(dat)[1] = "Well"
     as.factor = dat$Well
     UsedWells = dat[dat$Well %in% df$well,]
@@ -31,26 +31,25 @@
     }
     
     dat_list = replicate(length(unique(ct$gene)), data.frame(CT=(replicate(9,1)), sample = factor(c(rep(1,3),rep(2,3),rep(3,3)))), simplify = FALSE)
-    dat_list2 = replicate(length(unique(ct$gene)), data.frame(meanCT=(replicate(3,1)), sample = factor(c(rep(1,1),rep(2,1),rep(3,1))), deltactActin = rep(3,1),deltactElfa1 = rep(3,1)), simplify = FALSE)
+    dat_list2 = replicate(length(unique(ct$gene)), data.frame(meanCT=(replicate(3,1)), sample = factor(c(rep(1,1),rep(2,1),rep(3,1)))), simplify = FALSE)
     dat_list = setNames(dat_list, unique(ct$gene))
     dat_list2 = setNames(dat_list2, unique(ct$gene))
     
     for (i in unique(ct$gene)){
       dat_list[[i]]$CT = unlist(ct$CT[ct$gene == i])
-      dat_list2[[i]]$meanCT[dat_list2$ACTB$sample == 1] = mean(dat_list[[i]]$CT[dat_list$ACTB$sample == 1])
+      dat_list2[[i]]$meanCT[dat_list2[[hk]]$sample == 1] = mean(dat_list[[i]]$CT[dat_list[[hk]]$sample == 1])
       dat_list2[[i]]$meanCT[dat_list2[[i]]$sample == 2] = mean(dat_list[[i]]$CT[dat_list[[i]]$sample == 2])
       dat_list2[[i]]$meanCT[dat_list2[[i]]$sample == 3] = mean(dat_list[[i]]$CT[dat_list[[i]]$sample == 3])
-      if (hk == "ACTB") {dat_list2[[i]]$deltactActin = dat_list2[[i]]$meanCT - dat_list2$ACTB$meanCT 
-      ctlist[[i]] = (dat_list2[[i]]$deltactActin)}
-      else {
-      dat_list2[[i]]$deltactElfa1 = dat_list2[[i]]$meanCT - dat_list2$ELFA1$meanCT} }
+      dat_list2[[i]]$deltact = dat_list2[[i]]$meanCT - dat_list2[[hk]]$meanCT 
+      ctlist[[i]] = (dat_list2[[i]]$deltact)}
+      
        
     
     ctlist = data.frame(ctlist)
     
     
     if(missing(z)) {
-        return(dat2)
+        return(dat_list2)
     }
     else {
       if (z == "deltact"){
@@ -64,7 +63,7 @@
                
   
       else {
-        print("blah")
+        print("please select one of the following: 'graph' or 'deltact'")
       }
      
    }  
