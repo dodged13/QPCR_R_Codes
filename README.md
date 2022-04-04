@@ -4,13 +4,14 @@ This script is for the calculation of deltaCt values given a particular threshol
 
 The input file is a data.frame which contains your wells that you used, the genes in them and the sample number (biological repeats). An example of this would be:
 
-well  gene  sample
-A1    DMD   1
-A2    DMD   2
-A3    DMD   3
-A4    ACTB  1 
-A5    ACTB  2
-A6    ACTB  3
+well |  gene | sample|
+-----|-------|-------|
+|A1   | DMD   |1|
+|A2    |DMD   |2|
+|A3    |DMD   |3|
+|A4    |ACTB  |1 |
+|A5    |ACTB | 2|
+|A6    |ACTB | 3|
 
 This can be done in excel and imported as a csv or could be written in R, using the data.frame() function.
 
