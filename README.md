@@ -25,7 +25,7 @@ The function requires multiple inputs and their descriptions are:
 
 ### An example of the "graph" output is:
 
-![image](https://user-images.githubusercontent.com/47229599/161538267-49a6b252-2099-4c1b-b61f-2bafb79f30f2.png)
+![image](https://user-images.githubusercontent.com/47229599/161576862-f1383adb-cefa-4636-af30-f119ca1f897e.png)
 
 The curves are facetted for both gene and sample, giving a much nicer plot than what is given by the stepOne machine.
 
