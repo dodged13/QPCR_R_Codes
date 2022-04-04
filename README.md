@@ -29,7 +29,7 @@ The function requires multiple inputs and their descriptions are:
 
 The curves are facetted for both gene and sample, giving a much nicer plot than what is given by the stepOne machine.
 
-### if z = "deltact", the ouput will be:
+### if z = "deltact", the output will be:
 
  | ACTB   |    DMD   |  TAF5L   |
  |---------|----------|----------|
