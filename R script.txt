@@ -1,0 +1,107 @@
+﻿qpcrplot = function(x,df,y,z,hk, f) {
+    library(ggplot2)
+    dat = read.csv(choose.files(), header = T)
+    colnames(dat)[1] = "Well"
+    as.factor = dat$Well
+    UsedWells = dat[dat$Well %in% df$well,]
+    QPCRDATA = replicate(length(df$well),data.frame(well= replicate(x,1),Cycle = factor(1:x),GREEN=(replicate(x,1)),normalised=(replicate(x,1)),gene =(replicate(x,1)), CT=(replicate(x,1))),simplify = FALSE)
+    QPCRDATA = setNames(QPCRDATA, df$well)
+    well_list = df$well
+    gene_list = df$gene
+    ct = data.frame(CT=1:length(df$well))
+    rownames(ct) = df$well
+    ct$gene = df$gene
+    ct$sample = factor(df$sample)
+    ctlist = list()
+    dat2 = dat[(dat$Well %in% well_list),]
+    dat2$gene = gene_list
+    dat2$sample = factor(rep(df$sample, x))
+    dat2$threshold = y
+    
+    cycle_list = unique(dat2$Cycle)
+    for (i in unique(well_list)) {
+      for (cy in cycle_list) {
+        dat2$normalised[dat2$Well == i & dat2$Cycle == cycle_list[cy]]= dat2$GREEN[dat2$Well == i & dat2$Cycle == cycle_list[cy+5]] / (dat2$GREEN[dat2$Cycle == cycle_list[cy] & dat2$Well == i ]) 
+      } }
+    
+    for (t in 1:length(df$well)) {
+      QPCRDATA[[t]]$well = replicate(x, well_list[t])
+      QPCRDATA[[t]]$gene = replicate(x, gene_list[t])
+      QPCRDATA[[t]]$GREEN = UsedWells$GREEN[UsedWells$Well == well_list[t]]
+      QPCRDATA[[t]]$normalised = QPCRDATA[[t]]$GREEN - QPCRDATA[[t]]$GREEN[QPCRDATA[[t]]$Cycle==25]
+      QPCRDATA[[t]]$CT = approx(QPCRDATA[[t]]$normalised, QPCRDATA[[t]]$Cycle, xout=y)[2]
+      ct$CT[[t]] = unique(QPCRDATA[[t]]$CT)
+    }
+    
+    dat_list = replicate(length(unique(ct$gene)), data.frame(CT=(replicate(9,1)), sample = factor(c(rep(1,3),rep(2,3),rep(3,3)))), simplify = FALSE)
+    dat_list2 = replicate(length(unique(ct$gene)), data.frame(meanCT=(replicate(3,1)), sample = factor(c(rep(1,1),rep(2,1),rep(3,1))), deltactActin = rep(3,1),deltactElfa1 = rep(3,1)), simplify = FALSE)
+    dat_list = setNames(dat_list, unique(ct$gene))
+    dat_list2 = setNames(dat_list2, unique(ct$gene))
+    
+    for (i in unique(ct$gene)){
+      dat_list[[i]]$CT = unlist(ct$CT[ct$gene == i])
+      dat_list2[[i]]$meanCT[dat_list2[[hk]]$sample == 1] = mean(dat_list[[i]]$CT[dat_list[[hk]]$sample == 1])
+      dat_list2[[i]]$meanCT[dat_list2[[i]]$sample == 2] = mean(dat_list[[i]]$CT[dat_list[[i]]$sample == 2])
+      dat_list2[[i]]$meanCT[dat_list2[[i]]$sample == 3] = mean(dat_list[[i]]$CT[dat_list[[i]]$sample == 3])
+      dat_list2[[i]]$deltact = dat_list2[[i]]$meanCT - dat_list2[[hk]]$meanCT 
+      ctlist[[i]] = (dat_list2[[i]]$deltact)}
+  
+    for (i in df$well) {
+      df$max[df$well == i] = max(na.omit(dat2$normalised[dat2$Well == i & dat2$Cycle > 20])) 
+      df$ct[df$well == i] = dat2$Cycle[dat2$normalised == df$max & dat2$Well == i]
+    }
+    
+    dat3 = data.frame(Well = df$well)
+    dat3$gene = df$gene
+    dat3$sample = df$sample
+    dat3$ct = df$ct
+    dat3$normalised = df$max
+    dat3$condition = f
+    #dat3 = dat3[dat3$ct > 20,]
+    
+    for (gene in df$gene) {
+      dat3$meanct[dat3$gene == gene & dat3$sample == 1] = mean(dat3$ct[dat3$gene == gene & dat3$sample == 1])
+      dat3$meanct[dat3$gene == gene & dat3$sample == 2] = mean(dat3$ct[dat3$gene == gene & dat3$sample == 2])
+      dat3$meanct[dat3$gene == gene & dat3$sample == 3] = mean(dat3$ct[dat3$gene == gene & dat3$sample == 3])
+      dat3$deltact[dat3$gene == gene & dat3$sample == 1] = dat3$meanct[dat3$gene == gene & dat3$sample == 1] - dat3$meanct[dat3$gene == hk & dat3$sample == 1]
+      dat3$deltact[dat3$gene == gene & dat3$sample == 2] = dat3$meanct[dat3$gene == gene & dat3$sample == 2] - dat3$meanct[dat3$gene == hk & dat3$sample == 2]
+      dat3$deltact[dat3$gene == gene & dat3$sample == 3] = dat3$meanct[dat3$gene == gene & dat3$sample == 3] - dat3$meanct[dat3$gene == hk & dat3$sample == 3]
+    }
+    
+  dat4 = data.frame(gene = rep(unique(df$gene),3))
+  dat4$sample = c(rep(1,10),rep(2,10),rep(3,10))
+  dat4$condition = f
+  
+  for (i in df$gene) {
+       dat4$deltact[dat4$gene == i & dat4$sample == 1] = mean(dat3$deltact[dat3$gene == i & dat3$sample == 1])
+       dat4$deltact[dat4$gene == i & dat4$sample == 2] = mean(dat3$deltact[dat3$gene == i & dat3$sample == 2])
+       dat4$deltact[dat4$gene == i & dat4$sample == 3] = mean(dat3$deltact[dat3$gene == i & dat3$sample == 3])
+    }
+    
+    ctlist = data.frame(ctlist)
+    
+    
+    if(missing(z)) {
+        return(dat2)
+    }
+    else {
+      if (z == "deltact"){
+        return(ctlist)
+      }}
+      if (z == "graph"){
+        return(ggplot(data = dat2, aes(x=Cycle, y= normalised)) + geom_line(aes(col = Well), size =1.25) + 
+                 theme_minimal() + facet_wrap(~gene + sample, scales = "free") + theme(legend.position = "NONE") + labs(title = f)) }
+               
+    if ( z == "new"){
+      return(dat3)
+    }
+    
+    if ( z == "newdelta"){
+      return(dat4)
+    }
+  
+      else {
+        print("please select one of the following: 'graph' or 'deltact' or 'new'")
+      }
+     
+  }
